@@ -4,20 +4,17 @@ from tkinter import ttk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-class TrapecioApp(tk.Tk):
+class NumericalIntegrationApp(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
-        self.title("Método del Trapecio")
-        self.geometry("400x400")
+        self.title("Integración Numérica")
+        self.geometry("800x600")
 
         self.x = []
         self.y = []
+        self.rectangulo = 0
         self.trapecio = 0
-        self.fa = 0
-        self.fb = 0
-        self.I = 0
-        self.Etrunc = 0
-        self.Et = 0
+        self.simpson = 0
 
         self.fig = plt.Figure(figsize=(5, 4), dpi=100)
         self.ax = self.fig.add_subplot(111)
@@ -29,29 +26,40 @@ class TrapecioApp(tk.Tk):
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
-        self.label = tk.Label(self, text="Resultado del método del trapecio: {:.2f}".format(self.trapecio))
-        self.label.pack(side=tk.BOTTOM)
-
         self.add_button = tk.Button(self, text="Agregar Datos", command=self.agregar_datos)
-        self.add_button.pack(side=tk.BOTTOM)
+        self.add_button.pack(side=tk.TOP)
 
-        self.show_button = tk.Button(self, text="Mostrar Resultados", command=self.mostrar_resultados)
-        self.show_button.pack(side=tk.BOTTOM)
+        self.tabControl = ttk.Notebook(self)
+        self.tabControl.pack(expand=1, fill="both")
+
+        self.rectangulo_tab = ttk.Frame(self.tabControl)
+        self.tabControl.add(self.rectangulo_tab, text="Regla del Rectángulo")
+
+        self.trapecio_tab = ttk.Frame(self.tabControl)
+        self.tabControl.add(self.trapecio_tab, text="Regla del Trapecio")
+
+        self.simpson_tab = ttk.Frame(self.tabControl)
+        self.tabControl.add(self.simpson_tab, text="Regla de Simpson 3/8")
+
+        self.error_tab = ttk.Frame(self.tabControl)
+        self.tabControl.add(self.error_tab, text="Comparativa de Errores")
+
+        self.rectangulo_label = tk.Label(self.rectangulo_tab, text="Resultado de la Regla del Rectángulo: {:.2f}".format(self.rectangulo))
+        self.rectangulo_label.pack(side=tk.BOTTOM)
+
+        self.trapecio_label = tk.Label(self.trapecio_tab, text="Resultado de la Regla del Trapecio: {:.2f}".format(self.trapecio))
+        self.trapecio_label.pack(side=tk.BOTTOM)
+
+        self.simpson_label = tk.Label(self.simpson_tab, text="Resultado de la Regla de Simpson 3/8: {:.2f}".format(self.simpson))
+        self.simpson_label.pack(side=tk.BOTTOM)
+
+        self.error_text = tk.Text(self.error_tab, height=10)
+        self.error_text.pack(side=tk.BOTTOM)
 
         self.tree = ttk.Treeview(self, columns=("x", "y"), show="headings")
         self.tree.heading("x", text="x")
         self.tree.heading("y", text="y")
         self.tree.pack(side=tk.BOTTOM)
-
-        self.table_frame = ttk.Frame(self)
-        self.table_frame.pack(side=tk.BOTTOM)
-        self.table = ttk.Treeview(self.table_frame, columns=("fa", "fb", "I", "Etrunc", "Et"), show="headings")
-        self.table.heading("fa", text="f(a)")
-        self.table.heading("fb", text="f(b)")
-        self.table.heading("I", text="I")
-        self.table.heading("Etrunc", text="Etrunc")
-        self.table.heading("Et", text="Et")
-        self.table.pack()
 
     def agregar_datos(self):
         x_value = float(tk.simpledialog.askstring("Ingresar Datos", "Ingrese un valor para x:"))
@@ -62,42 +70,56 @@ class TrapecioApp(tk.Tk):
         self.canvas.draw()
         self.actualizar_listado()
 
+    def calcular_rectangulo(self):
+        self.rectangulo = 0
+        for i in range(1, len(self.x)):
+            h = self.x[i] - self.x[i - 1]
+            self.rectangulo += h * self.y[i - 1]
+
     def calcular_trapecio(self):
         self.trapecio = 0
         for i in range(1, len(self.x)):
             h = self.x[i] - self.x[i - 1]
             self.trapecio += 0.5 * h * (self.y[i] + self.y[i - 1])
 
-    def calcular_resultados(self):
-        self.fa = self.y[0]
-        self.fb = self.y[-1]
-        self.I = self.trapecio
-        self.Etrunc = abs(self.I - (self.fb - self.fa))
-        self.Et = abs(self.Etrunc / self.I) * 100
-
-
+    def calcular_simpson(self):
+        self.simpson = 0
+        for i in range(1, len(self.x) - 1, 2):
+            h = self.x[i] - self.x[i - 1]
+            self.simpson += (h / 3) * (self.y[i - 1] + 4 * self.y[i] + self.y[i + 1])
 
     def mostrar_resultados(self):
+        self.calcular_rectangulo()
         self.calcular_trapecio()
-        self.calcular_resultados()
+        self.calcular_simpson()
 
-        resultado = "Resultado del método del trapecio: {:.2f}".format(self.trapecio)
-        messagebox.showinfo("Resultado", resultado)
+        rectangulo_resultado = "Resultado de la Regla del Rectángulo: {:.2f}".format(self.rectangulo)
+        self.rectangulo_label.configure(text=rectangulo_resultado)
 
-        self.label.configure(text="Resultado del método del trapecio: {:.2f}".format(self.trapecio))
+        trapecio_resultado = "Resultado de la Regla del Trapecio: {:.2f}".format(self.trapecio)
+        self.trapecio_label.configure(text=trapecio_resultado)
 
-        self.actualizar_tabla()
+        simpson_resultado = "Resultado de la Regla de Simpson 3/8: {:.2f}".format(self.simpson)
+        self.simpson_label.configure(text=simpson_resultado)
 
-    def actualizar_tabla(self):
-        self.table.delete(*self.table.get_children())
-        self.table.insert("", "end", values=(self.fa, self.fb, self.I, self.Etrunc, self.Et))
+        self.actualizar_errores()
+
+    def actualizar_errores(self):
+        self.error_text.delete("1.0", tk.END)
+        error_rectangulo = abs(self.rectangulo - (self.y[-1] - self.y[0]))
+        error_trapecio = abs(self.trapecio - (self.y[-1] - self.y[0]))
+        error_simpson = abs(self.simpson - (self.y[-1] - self.y[0]))
+        self.error_text.insert(tk.END, "Comparativa de Errores:\n\n")
+        self.error_text.insert(tk.END, "Regla del Rectángulo: {:.2f}\n".format(error_rectangulo))
+        self.error_text.insert(tk.END, "Regla del Trapecio: {:.2f}\n".format(error_trapecio))
+        self.error_text.insert(tk.END, "Regla de Simpson 3/8: {:.2f}\n".format(error_simpson))
 
     def actualizar_listado(self):
         self.tree.delete(*self.tree.get_children())
         for i in range(len(self.x)):
             self.tree.insert("", "end", values=(self.x[i], self.y[i]))
 
-    
+
 if __name__ == "__main__":
-    app = TrapecioApp()
+    app = NumericalIntegrationApp()
     app.mainloop()
