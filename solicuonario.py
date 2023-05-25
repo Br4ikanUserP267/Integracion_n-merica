@@ -280,9 +280,17 @@ class SimpsonApp(tk.Tk):
         methods = ["Trapezoidal", "Simpson 1/3", "Simpson 3/8"]
         errors = [trapezoidal_error, simpson13_error, simpson38_error]
 
-        plt.bar(methods, errors)
+        # Colores para las líneas
+        colors = ['red', 'green', 'blue']
+
+        # Generar la gráfica de líneas
+        plt.plot(methods, errors, marker='o', linestyle='-', color=colors)
+
+        # Configurar etiquetas y título
         plt.ylabel('Error de truncamiento')
         plt.title('Comparación de errores de truncamiento')
+
+        # Mostrar la gráfica
         plt.show()
 
 if __name__ == "__main__":
