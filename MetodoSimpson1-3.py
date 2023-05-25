@@ -69,10 +69,10 @@ class SimpsonApp(tk.Tk):
             messagebox.showerror("Error", "Se necesitan al menos 3 puntos para aplicar el método de Simpson 1/3.")
             return
 
-        if n % 2 == 0:
-            messagebox.showwarning("Advertencia", "La cantidad de puntos ingresados es par. Se omitirá el último punto.")
-            self.x = self.x[:-1]
-            self.y = self.y[:-1]
+        if n % 2 != 1:
+            messagebox.showwarning("Advertencia", "La cantidad de puntos ingresados no es compatible con el método de Simpson 1/3. Se omitirán los últimos puntos.")
+            self.x = self.x[:-(n % 2)]
+            self.y = self.y[:-(n % 2)]
             self.actualizar_listado()
 
         for i in range(1, len(self.x) - 1, 2):
