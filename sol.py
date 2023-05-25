@@ -128,7 +128,8 @@ class SimpsonApp(tk.Tk):
         self.scrollbar_table_simpson38 = ttk.Scrollbar(self.table_frame_simpson38, orient="vertical", command=self.table_simpson38.yview)
         self.scrollbar_table_simpson38.pack(side=tk.RIGHT, fill=tk.Y)
         self.table_simpson38.configure(yscrollcommand=self.scrollbar_table_simpson38.set)
-
+        self.button_grafico_trapezoidal = tk.Button(self.table_frame_trapezoidal, text="Mostrar Gráfico", command=self.mostrar_grafico_trapezoidal)
+        self.button_grafico_trapezoidal.pack(side=tk.BOTTOM)
     def agregar_datos_trapezoidal(self):
         x = simpledialog.askfloat("Datos", "Ingrese el valor de x:")
         y = simpledialog.askfloat("Datos", "Ingrese el valor de y:")
@@ -303,7 +304,27 @@ class SimpsonApp(tk.Tk):
         y = np.interp(x, self.x_simpson38, self.y_simpson38)
         self.ax.fill_between(x, y, 0, alpha=0.2)
         self.canvas.draw()
+    
+    
+    def mostrar_grafico_errores(self):
+        x = ['Trapecio', 'Simpson 1/3', 'Simpson 3/8']
+        y = [self.Etrunc_trapezoidal, self.Etrunc_simpson13, self.Etrunc_simpson38]
+        
+        fig, ax = plt.subplots()
+        ax.plot(x, y, marker='o', linestyle='-', color='blue')
+        ax.set_xlabel('Método')
+        ax.set_ylabel('Error de Truncamiento')
+        ax.set_title('Errores de Truncamiento')
+        
+        self.ax.clear()
+        self.canvas.get_tk_widget().pack_forget()
+        self.canvas = FigureCanvasTkAgg(fig, master=self)
+        self.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+        self.ax = ax
+        self.ax.grid()
+        self.canvas.draw()
 
+        self.canvas.get_tk_widget().lift() 
 if __name__ == "__main__":
     app = SimpsonApp()
     app.mainloop()
